@@ -7,6 +7,12 @@ export interface LoginData {
   password: string;
 }
 
+export interface RegisterData {
+  nombre: string;
+  correo: string;
+  password: string;
+}
+
 export interface Usuario {
   rol: string;
   estado: boolean;

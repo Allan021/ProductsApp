@@ -1,6 +1,11 @@
 import React, {createContext, useEffect, useReducer} from 'react';
 import coffeApi from '../api/CoffeApi';
-import {LoginData, LoginResponse, Usuario} from '../interfaces/authInterfaces';
+import {
+  LoginData,
+  LoginResponse,
+  RegisterData,
+  Usuario,
+} from '../interfaces/authInterfaces';
 import {AuthReducer, AuthState} from './AuthReducer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,9 +14,9 @@ export type AuthContextProps = {
   user: Usuario | null;
   token: string | null;
   errorMessage: string;
-
+  signUp: (regsiterData: RegisterData) => void;
   logout: () => void;
-  signUp: (loginData: LoginData) => void;
+  signIn: (loginData: LoginData) => void;
   addError: (payload: string) => void;
   removeError: () => void;
 };
@@ -29,8 +34,11 @@ export const AuthProvider = ({children}: any) => {
     checkToken();
   }, []);
 
-  const logout = () => {};
-  const signUp = async ({email: correo, password}: LoginData) => {
+  const logout = async () => {
+    await AsyncStorage.removeItem('token');
+    dispatch({type: 'logOut'});
+  };
+  const signIn = async ({email: correo, password}: LoginData) => {
     try {
       const {data} = await coffeApi.post<LoginResponse>('/auth/login', {
         correo,
@@ -48,6 +56,31 @@ export const AuthProvider = ({children}: any) => {
       dispatch({
         type: 'addError',
         payload: error.response.data.msg || 'Informacion Incorrecta',
+      });
+    }
+  };
+
+  const signUp = async ({nombre, correo, password}: RegisterData) => {
+    try {
+      const {data} = await coffeApi.post<LoginResponse>('/usuarios', {
+        nombre,
+        correo,
+        password,
+      });
+
+      dispatch({
+        type: 'signUp',
+        payload: {user: data.usuario, token: data.token},
+      });
+      console.log(data);
+
+      //despues del login se crea el token
+      await AsyncStorage.setItem('token', data.token);
+    } catch (error: any) {
+      console.log(error);
+      dispatch({
+        type: 'addError',
+        payload: error.response.data.msg || 'El correo ya esta ingresado',
       });
     }
   };
@@ -80,7 +113,7 @@ export const AuthProvider = ({children}: any) => {
   const [state, dispatch] = useReducer(AuthReducer, initialState);
   return (
     <AuthContext.Provider
-      value={{logout, signUp: signUp, addError, removeError, ...state}}>
+      value={{logout, signIn, addError, removeError, signUp, ...state}}>
       {children}
     </AuthContext.Provider>
   );

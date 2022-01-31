@@ -1,21 +1,42 @@
 import {StackScreenProps} from '@react-navigation/stack';
-import React from 'react';
-import {KeyboardAvoidingView, Text, TextInput, View} from 'react-native';
+import React, {useContext, useEffect} from 'react';
+import {
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import {Background} from '../components/Background';
+
 import {Logo} from '../components/Logo';
+import {AuthContext} from '../contexts/AuthContext';
 import {useForm} from '../hooks/useForm';
 import {colors, styles} from '../theme/appTheme';
 interface Props extends StackScreenProps<any, any> {}
 export const RegisterScreen = ({navigation}: Props) => {
+  const {signUp, errorMessage, removeError} = useContext(AuthContext);
   const {name, email, password, onChange} = useForm({
     name: '',
     email: '',
     password: '',
   });
   const handleSend = () => {
-    console.log(name, email, password);
+    Keyboard.dismiss();
+    signUp({nombre: name, correo: email, password});
   };
+  useEffect(() => {
+    if (errorMessage.length === 0) return;
+
+    Alert.alert('Registro Incorrecto', errorMessage, [
+      {
+        text: 'Ok',
+        onPress: removeError,
+      },
+    ]);
+  }, [errorMessage]);
+
   return (
     <>
       <KeyboardAvoidingView style={{flex: 1, backgroundColor: colors.primary}}>
@@ -73,8 +94,7 @@ export const RegisterScreen = ({navigation}: Props) => {
 
           <TouchableOpacity
             onPress={() => navigation.replace('LoginScreen')}
-            activeOpacity={0.8}
-            style={styles.buttonReturn}>
+            activeOpacity={0.8}>
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
         </View>

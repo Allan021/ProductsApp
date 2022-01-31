@@ -1,6 +1,13 @@
 import {StackScreenProps} from '@react-navigation/stack';
 import React, {useContext, useEffect} from 'react';
-import {Alert, KeyboardAvoidingView, Text, TextInput, View} from 'react-native';
+import {
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Background} from '../components/Background';
 import {Logo} from '../components/Logo';
@@ -9,13 +16,14 @@ import {useForm} from '../hooks/useForm';
 import {styles} from '../theme/appTheme';
 interface Props extends StackScreenProps<any, any> {}
 export const LoginScreen = ({navigation}: Props) => {
-  const {signUp, errorMessage, removeError} = useContext(AuthContext);
+  const {signIn, errorMessage, removeError} = useContext(AuthContext);
   const {email, password, onChange} = useForm({
     email: '',
     password: '',
   });
   const handleSend = () => {
-    signUp({email, password});
+    Keyboard.dismiss();
+    signIn({email, password});
   };
 
   useEffect(() => {
